@@ -10,14 +10,8 @@ if (!isset($_SESSION["user_id"])) {
     exit;
 }
 
-if ($_SESSION["user_role"] !== "support") {
-
-    http_response_code(403);
-    die("Access denied.");
-}
-
 /*
- * Get tickets assigned to the logged-in support user
+ * Get tickets created by the logged-in employee
  */
 $stmt = $pdo->prepare(
     "SELECT
@@ -26,14 +20,14 @@ $stmt = $pdo->prepare(
         tickets.priority,
         tickets.status,
         tickets.created_at,
-        creator.name AS creator_name,
-        categories.name AS category_name
+        categories.name AS category_name,
+        assignee.name AS assigned_name
      FROM tickets
-     JOIN users AS creator
-        ON tickets.user_id = creator.id
      JOIN categories
         ON tickets.category_id = categories.id
-     WHERE tickets.assigned_to = ?
+     LEFT JOIN users AS assignee
+        ON tickets.assigned_to = assignee.id
+     WHERE tickets.user_id = ?
      ORDER BY tickets.created_at DESC"
 );
 
@@ -57,7 +51,9 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Assigned Tickets - IT Help Desk</title>
+    <title>
+        My Tickets - IT Help Desk
+    </title>
 
 </head>
 
@@ -65,7 +61,7 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <h1>IT Help Desk</h1>
 
-    <h2>Support Dashboard</h2>
+    <h2>My Tickets</h2>
 
     <p>
         Welcome,
@@ -73,16 +69,15 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </p>
 
     <p>
-        Role:
-        <?php echo htmlspecialchars($_SESSION["user_role"]); ?>
+        <a href="/create-ticket.php">
+            Create New Ticket
+        </a>
     </p>
-
-    <h3>My Assigned Tickets</h3>
 
     <?php if (count($tickets) === 0): ?>
 
         <p>
-            No tickets are currently assigned to you.
+            You have not created any tickets yet.
         </p>
 
     <?php else: ?>
@@ -94,10 +89,10 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <tr>
 
                     <th>ID</th>
-                    <th>Employee</th>
                     <th>Title</th>
                     <th>Category</th>
                     <th>Priority</th>
+                    <th>Assigned To</th>
                     <th>Status</th>
                     <th>Created At</th>
                     <th>Action</th>
@@ -117,10 +112,6 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </td>
 
                         <td>
-                            <?php echo htmlspecialchars($ticket["creator_name"]); ?>
-                        </td>
-
-                        <td>
                             <?php echo htmlspecialchars($ticket["title"]); ?>
                         </td>
 
@@ -133,26 +124,37 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </td>
 
                         <td>
+
+                            <?php if ($ticket["assigned_name"]): ?>
+
+                                <?php echo htmlspecialchars($ticket["assigned_name"]); ?>
+
+                            <?php else: ?>
+
+                                Not Assigned
+
+                            <?php endif; ?>
+
+                        </td>
+
+                        <td>
                             <?php echo htmlspecialchars($ticket["status"]); ?>
                         </td>
 
                         <td>
                             <?php echo htmlspecialchars($ticket["created_at"]); ?>
                         </td>
-                        <td>
-                            <a href="/support/update-ticket.php?id=<?php echo urlencode($ticket["id"]); ?>">
-                                View / Update
-                            </a>
 
-                            <br>
+                        <td>
 
                             <a href="/ticket-conversation.php?id=<?php echo urlencode($ticket["id"]); ?>">
-                                Conversation
+                                View
                             </a>
+
                         </td>
 
                     </tr>
-x
+
                 <?php endforeach; ?>
 
             </tbody>
@@ -162,6 +164,12 @@ x
     <?php endif; ?>
 
     <br>
+
+    <a href="/dashboard.php">
+        Dashboard
+    </a>
+
+    |
 
     <a href="/logout.php">
         Logout
