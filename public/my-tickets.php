@@ -1,10 +1,10 @@
 <?php
 
 require_once "../config/database.php";
-require_once "../includes/header.php";
 require_once "../includes/auth.php";
 
 requireLogin();
+require_once "../includes/header.php";
 /*
  * Get tickets created by the logged-in employee
  */

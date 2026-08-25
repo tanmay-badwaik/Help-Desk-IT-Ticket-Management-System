@@ -1,8 +1,8 @@
 <?php
-require_once "../includes/header.php";
 require_once "../includes/auth.php";
 
 requireLogin();
+require_once "../includes/header.php";
 
 ?>
 

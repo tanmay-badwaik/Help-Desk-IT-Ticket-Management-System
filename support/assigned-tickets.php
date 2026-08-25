@@ -1,11 +1,9 @@
 <?php
 require_once "../config/database.php";
-
-require_once "../includes/header.php";
-
 require_once "../includes/auth.php";
 
 requireRole("support");
+require_once "../includes/header.php";
 /*
  * Get tickets assigned to the logged-in support user
  */
