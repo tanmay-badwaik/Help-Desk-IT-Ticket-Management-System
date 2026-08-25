@@ -1,20 +1,9 @@
 <?php
-
-session_start();
-
 require_once "../config/database.php";
+require_once "../includes/header.php";
+require_once "../includes/auth.php";
 
-if (!isset($_SESSION["user_id"])) {
-
-    header("Location: /login.php");
-    exit;
-}
-
-if ($_SESSION["user_role"] !== "admin") {
-
-    http_response_code(403);
-    die("Access denied.");
-}
+requireRole("admin");
 
 $stmt = $pdo->query(
     "SELECT
@@ -53,37 +42,7 @@ $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
 
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Admin Dashboard - IT Help Desk</title>
-
-</head>
-
-<body>
-
-    <h1>IT Help Desk</h1>
-
     <h2>Admin Dashboard</h2>
-
-    <p>
-        Welcome,
-        <?php echo htmlspecialchars($_SESSION["user_name"]); ?>
-    </p>
-
-    <p>
-        Role:
-        <?php echo htmlspecialchars($_SESSION["user_role"]); ?>
-    </p>
     <h3>Ticket Summary</h3>
 
     <table border="1" cellpadding="8" cellspacing="0">
@@ -237,10 +196,4 @@ $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
 
     <br>
 
-    <a href="/logout.php">
-        Logout
-    </a>
-
-</body>
-
-</html>
+<?php require_once "../includes/footer.php"; ?>

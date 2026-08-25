@@ -1,14 +1,10 @@
 <?php
 
-session_start();
-
 require_once "../config/database.php";
+require_once "../includes/header.php";
+require_once "../includes/auth.php";
 
-if (!isset($_SESSION["user_id"])) {
-
-    header("Location: /login.php");
-    exit;
-}
+requireLogin();
 
 $ticket_id = $_GET["id"] ?? "";
 
@@ -56,29 +52,6 @@ if (!$ticket) {
 }
 
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>
-        Ticket #<?php echo htmlspecialchars($ticket["id"]); ?>
-        - IT Help Desk
-    </title>
-
-</head>
-
-<body>
-
-    <h1>IT Help Desk</h1>
 
     <h2>
         Ticket #<?php echo htmlspecialchars($ticket["id"]); ?>
@@ -143,6 +116,4 @@ if (!$ticket) {
         Back to My Tickets
     </a>
 
-</body>
-
-</html>
+<?php require_once "../includes/footer.php"; ?>

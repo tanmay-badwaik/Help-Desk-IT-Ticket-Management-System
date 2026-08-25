@@ -1,20 +1,9 @@
 <?php
-
-session_start();
-
 require_once "../config/database.php";
+require_once "../includes/header.php";
+require_once "../includes/auth.php";
 
-if (!isset($_SESSION["user_id"])) {
-
-    header("Location: /login.php");
-    exit;
-}
-
-if ($_SESSION["user_role"] !== "admin") {
-
-    http_response_code(403);
-    die("Access denied.");
-}
+requireRole("admin");
 
 $ticket_id = $_GET["id"] ?? "";
 
@@ -133,25 +122,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Assign Ticket - IT Help Desk</title>
-
-</head>
-
-<body>
-
-    <h1>IT Help Desk</h1>
 
     <h2>Assign Ticket</h2>
 
@@ -254,7 +224,4 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <a href="/admin/dashboard.php">
         Back to Admin Dashboard
     </a>
-
-</body>
-
-</html>
+<?php require_once "../includes/footer.php"; ?>

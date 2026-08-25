@@ -1,21 +1,11 @@
 <?php
-
-session_start();
-
 require_once "../config/database.php";
 
-if (!isset($_SESSION["user_id"])) {
+require_once "../includes/header.php";
 
-    header("Location: /login.php");
-    exit;
-}
+require_once "../includes/auth.php";
 
-if ($_SESSION["user_role"] !== "support") {
-
-    http_response_code(403);
-    die("Access denied.");
-}
-
+requireRole("support");
 /*
  * Get tickets assigned to the logged-in support user
  */
@@ -45,37 +35,6 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Assigned Tickets - IT Help Desk</title>
-
-</head>
-
-<body>
-
-    <h1>IT Help Desk</h1>
-
-    <h2>Support Dashboard</h2>
-
-    <p>
-        Welcome,
-        <?php echo htmlspecialchars($_SESSION["user_name"]); ?>
-    </p>
-
-    <p>
-        Role:
-        <?php echo htmlspecialchars($_SESSION["user_role"]); ?>
-    </p>
 
     <h3>My Assigned Tickets</h3>
 
@@ -88,7 +47,6 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <?php else: ?>
 
         <table border="1" cellpadding="8" cellspacing="0">
-
             <thead>
 
                 <tr>
@@ -152,7 +110,7 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </td>
 
                     </tr>
-x
+
                 <?php endforeach; ?>
 
             </tbody>
@@ -160,13 +118,4 @@ x
         </table>
 
     <?php endif; ?>
-
-    <br>
-
-    <a href="/logout.php">
-        Logout
-    </a>
-
-</body>
-
-</html>
+<?php require_once "../includes/footer.php"; ?>

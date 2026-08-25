@@ -1,14 +1,10 @@
 <?php
 
-session_start();
-
 require_once "../config/database.php";
+require_once "../includes/header.php";
+require_once "../includes/auth.php";
 
-if (!isset($_SESSION["user_id"])) {
-
-    header("Location: login.php");
-    exit;
-}
+requireLogin();
 
 $error = "";
 $success = "";
@@ -50,160 +46,131 @@ $categories = $pdo->query(
 
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
+<h2>Create Ticket</h2>
 
-<head>
+<?php if ($error): ?>
 
-    <meta charset="UTF-8">
+    <p>
+        <?php echo htmlspecialchars($error); ?>
+    </p>
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<?php endif; ?>
 
-    <title>Create Ticket - IT Help Desk</title>
+<?php if ($success): ?>
 
-</head>
+    <p>
+        <?php echo htmlspecialchars($success); ?>
+    </p>
 
-<body>
+<?php endif; ?>
 
-    <h1>IT Help Desk</h1>
+<form method="POST">
 
-    <h2>Create Ticket</h2>
+    <div>
 
-    <?php if ($error): ?>
+        <label for="title">
+            Title:
+        </label>
 
-        <p>
-            <?php echo htmlspecialchars($error); ?>
-        </p>
+        <input
+            type="text"
+            id="title"
+            name="title"
+            maxlength="200"
+            required
+        >
 
-    <?php endif; ?>
-
-    <?php if ($success): ?>
-
-        <p>
-            <?php echo htmlspecialchars($success); ?>
-        </p>
-
-    <?php endif; ?>
-
-    <form method="POST">
-
-        <div>
-
-            <label for="title">
-                Title:
-            </label>
-
-            <input
-                type="text"
-                id="title"
-                name="title"
-                maxlength="200"
-                required
-            >
-
-        </div>
-
-        <br>
-
-        <div>
-
-            <label for="description">
-                Description:
-            </label>
-
-            <br>
-
-            <textarea
-                id="description"
-                name="description"
-                rows="6"
-                required
-            ></textarea>
-
-        </div>
-
-        <br>
-
-        <div>
-
-            <label for="category_id">
-                Category:
-            </label>
-
-            <select
-                id="category_id"
-                name="category_id"
-                required
-            >
-
-                <option value="">
-                    Select Category
-                </option>
-
-                <?php foreach ($categories as $category): ?>
-
-                    <option value="<?php echo $category["id"]; ?>">
-
-                        <?php echo htmlspecialchars($category["name"]); ?>
-
-                    </option>
-
-                <?php endforeach; ?>
-
-            </select>
-
-        </div>
-
-        <br>
-
-        <div>
-
-            <label for="priority">
-                Priority:
-            </label>
-
-            <select
-                id="priority"
-                name="priority"
-            >
-
-                <option value="Low">
-                    Low
-                </option>
-
-                <option value="Medium" selected>
-                    Medium
-                </option>
-
-                <option value="High">
-                    High
-                </option>
-
-                <option value="Critical">
-                    Critical
-                </option>
-
-            </select>
-
-        </div>
-
-        <br>
-
-        <button type="submit">
-            Create Ticket
-        </button>
-
-    </form>
+    </div>
 
     <br>
 
-    <a href="dashboard.php">
-        Back to Dashboard
-    </a>
+    <div>
 
-</body>
+        <label for="description">
+            Description:
+        </label>
 
-</html>
+        <br>
+
+        <textarea
+            id="description"
+            name="description"
+            rows="6"
+            required
+        ></textarea>
+
+    </div>
+
+    <br>
+
+    <div>
+
+        <label for="category_id">
+            Category:
+        </label>
+
+        <select
+            id="category_id"
+            name="category_id"
+            required
+        >
+
+            <option value="">
+                Select Category
+            </option>
+
+            <?php foreach ($categories as $category): ?>
+
+                <option value="<?php echo $category["id"]; ?>">
+
+                    <?php echo htmlspecialchars($category["name"]); ?>
+
+                </option>
+
+            <?php endforeach; ?>
+
+        </select>
+
+    </div>
+
+    <br>
+
+    <div>
+
+        <label for="priority">
+            Priority:
+        </label>
+
+        <select
+            id="priority"
+            name="priority"
+        >
+
+            <option value="Low">
+                Low
+            </option>
+
+            <option value="Medium" selected>
+                Medium
+            </option>
+
+            <option value="High">
+                High
+            </option>
+
+            <option value="Critical">
+                Critical
+            </option>
+
+        </select>
+
+    </div>
+
+    <br>
+
+    <button type="submit">
+        Create Ticket
+    </button>
+
+</form>
+<?php require_once "../includes/footer.php"; ?>

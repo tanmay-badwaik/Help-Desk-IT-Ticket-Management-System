@@ -1,49 +1,28 @@
 <?php
+require_once "../includes/header.php";
+require_once "../includes/auth.php";
 
-session_start();
-
-if (!isset($_SESSION["user_id"])) {
-
-    header("Location: login.php");
-    exit;
-}
+requireLogin();
 
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
+<h2>
+    Dashboard
+</h2>
 
-<head>
+<h3>
+    Welcome,
+    <?php echo htmlspecialchars($_SESSION["user_name"]); ?>
+</h3>
 
-    <meta charset="UTF-8">
+<p>
+    Email:
+    <?php echo htmlspecialchars($_SESSION["user_email"]); ?>
+</p>
 
-    <title>Dashboard - IT Help Desk</title>
+<p>
+    Role:
+    <?php echo htmlspecialchars($_SESSION["user_role"]); ?>
+</p>
 
-</head>
-
-<body>
-
-    <h1>IT Help Desk Dashboard</h1>
-
-    <h2>
-        Welcome,
-        <?php echo htmlspecialchars($_SESSION["user_name"]); ?>
-    </h2>
-
-    <p>
-        Email:
-        <?php echo htmlspecialchars($_SESSION["user_email"]); ?>
-    </p>
-
-    <p>
-        Role:
-        <?php echo htmlspecialchars($_SESSION["user_role"]); ?>
-    </p>
-
-    <p>
-        <a href="logout.php">Logout</a>
-    </p>
-
-</body>
-
-</html>
+<?php require_once "../includes/footer.php"; ?>

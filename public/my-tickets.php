@@ -1,15 +1,10 @@
 <?php
 
-session_start();
-
 require_once "../config/database.php";
+require_once "../includes/header.php";
+require_once "../includes/auth.php";
 
-if (!isset($_SESSION["user_id"])) {
-
-    header("Location: /login.php");
-    exit;
-}
-
+requireLogin();
 /*
  * Get tickets created by the logged-in employee
  */
@@ -39,142 +34,105 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
+<h2>My Tickets</h2>
 
-<head>
+<p>
+    You can view your tickets and their conversations below.
+</p>
 
-    <meta charset="UTF-8">
+<p>
+    <a href="/create-ticket.php">
+        Create New Ticket
+    </a>
+</p>
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>
-        My Tickets - IT Help Desk
-    </title>
-
-</head>
-
-<body>
-
-    <h1>IT Help Desk</h1>
-
-    <h2>My Tickets</h2>
+<?php if (count($tickets) === 0): ?>
 
     <p>
-        Welcome,
-        <?php echo htmlspecialchars($_SESSION["user_name"]); ?>
+        You have not created any tickets yet.
     </p>
 
-    <p>
-        <a href="/create-ticket.php">
-            Create New Ticket
-        </a>
-    </p>
+<?php else: ?>
 
-    <?php if (count($tickets) === 0): ?>
+    <table border="1" cellpadding="8" cellspacing="0">
 
-        <p>
-            You have not created any tickets yet.
-        </p>
+        <thead>
 
-    <?php else: ?>
+            <tr>
 
-        <table border="1" cellpadding="8" cellspacing="0">
+                <th>ID</th>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Priority</th>
+                <th>Assigned To</th>
+                <th>Status</th>
+                <th>Created At</th>
+                <th>Action</th>
 
-            <thead>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            <?php foreach ($tickets as $ticket): ?>
 
                 <tr>
 
-                    <th>ID</th>
-                    <th>Title</th>
-                    <th>Category</th>
-                    <th>Priority</th>
-                    <th>Assigned To</th>
-                    <th>Status</th>
-                    <th>Created At</th>
-                    <th>Action</th>
+                    <td>
+                        <?php echo htmlspecialchars($ticket["id"]); ?>
+                    </td>
+
+                    <td>
+                        <?php echo htmlspecialchars($ticket["title"]); ?>
+                    </td>
+
+                    <td>
+                        <?php echo htmlspecialchars($ticket["category_name"]); ?>
+                    </td>
+
+                    <td>
+                        <?php echo htmlspecialchars($ticket["priority"]); ?>
+                    </td>
+
+                    <td>
+
+                        <?php if ($ticket["assigned_name"]): ?>
+
+                            <?php echo htmlspecialchars($ticket["assigned_name"]); ?>
+
+                        <?php else: ?>
+
+                            Not Assigned
+
+                        <?php endif; ?>
+
+                    </td>
+
+                    <td>
+                        <?php echo htmlspecialchars($ticket["status"]); ?>
+                    </td>
+
+                    <td>
+                        <?php echo htmlspecialchars($ticket["created_at"]); ?>
+                    </td>
+
+                    <td>
+
+                        <a href="/ticket-conversation.php?id=<?php echo urlencode($ticket["id"]); ?>">
+                            View
+                        </a>
+
+                    </td>
 
                 </tr>
 
-            </thead>
+            <?php endforeach; ?>
 
-            <tbody>
+        </tbody>
 
-                <?php foreach ($tickets as $ticket): ?>
+    </table>
 
-                    <tr>
+<?php endif; ?>
 
-                        <td>
-                            <?php echo htmlspecialchars($ticket["id"]); ?>
-                        </td>
-
-                        <td>
-                            <?php echo htmlspecialchars($ticket["title"]); ?>
-                        </td>
-
-                        <td>
-                            <?php echo htmlspecialchars($ticket["category_name"]); ?>
-                        </td>
-
-                        <td>
-                            <?php echo htmlspecialchars($ticket["priority"]); ?>
-                        </td>
-
-                        <td>
-
-                            <?php if ($ticket["assigned_name"]): ?>
-
-                                <?php echo htmlspecialchars($ticket["assigned_name"]); ?>
-
-                            <?php else: ?>
-
-                                Not Assigned
-
-                            <?php endif; ?>
-
-                        </td>
-
-                        <td>
-                            <?php echo htmlspecialchars($ticket["status"]); ?>
-                        </td>
-
-                        <td>
-                            <?php echo htmlspecialchars($ticket["created_at"]); ?>
-                        </td>
-
-                        <td>
-
-                            <a href="/ticket-conversation.php?id=<?php echo urlencode($ticket["id"]); ?>">
-                                View
-                            </a>
-
-                        </td>
-
-                    </tr>
-
-                <?php endforeach; ?>
-
-            </tbody>
-
-        </table>
-
-    <?php endif; ?>
-
-    <br>
-
-    <a href="/dashboard.php">
-        Dashboard
-    </a>
-
-    |
-
-    <a href="/logout.php">
-        Logout
-    </a>
-
-</body>
-
-</html>
+<?php require_once "../includes/footer.php"; ?>
