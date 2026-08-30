@@ -181,6 +181,11 @@ $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
                                 No Action
 
                             <?php endif; ?>
+                            <br>
+
+                            <a href="/ticket-conversation.php?id=<?php echo urlencode($ticket["id"]); ?>">
+                                Conversation
+                            </a>
 
                         </td>
 
