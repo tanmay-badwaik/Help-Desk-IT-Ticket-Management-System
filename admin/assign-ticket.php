@@ -1,14 +1,13 @@
 <?php
+
 require_once "../config/database.php";
 require_once "../includes/auth.php";
 
 requireRole("admin");
-require_once "../includes/header.php";
 
 $ticket_id = $_GET["id"] ?? "";
 
 if (!ctype_digit($ticket_id)) {
-
     die("Invalid ticket ID.");
 }
 
@@ -30,7 +29,6 @@ $stmt->execute([$ticket_id]);
 $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$ticket) {
-
     http_response_code(404);
     die("Ticket not found.");
 }
@@ -120,108 +118,215 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 
+$statusClass = match ($ticket["status"]) {
+    "Open" => "bg-primary",
+    "Assigned" => "bg-info text-dark",
+    "In Progress" => "bg-warning text-dark",
+    "Resolved" => "bg-success",
+    "Closed" => "bg-secondary",
+    default => "bg-secondary"
+};
+
+require_once "../includes/header.php";
+
 ?>
 
+<div class="row justify-content-center">
 
-    <h2>Assign Ticket</h2>
+    <div class="col-lg-7">
 
-    <p>
-        <strong>Ticket ID:</strong>
-        <?php echo htmlspecialchars($ticket["id"]); ?>
-    </p>
+        <div class="mb-4">
 
-    <p>
-        <strong>Title:</strong>
-        <?php echo htmlspecialchars($ticket["title"]); ?>
-    </p>
+            <h2 class="fw-bold mb-1">
+                Assign Ticket
+            </h2>
 
-    <p>
-        <strong>Status:</strong>
-        <?php echo htmlspecialchars($ticket["status"]); ?>
-    </p>
+            <p class="text-muted mb-0">
+                Assign this ticket to an available support user.
+            </p>
 
-    <?php if ($error): ?>
+        </div>
 
-        <p>
-            <?php echo htmlspecialchars($error); ?>
-        </p>
 
-    <?php endif; ?>
+        <?php if ($error): ?>
 
-    <?php if ($success): ?>
+            <div class="alert alert-danger">
 
-        <p>
-            <?php echo htmlspecialchars($success); ?>
-        </p>
-
-    <?php endif; ?>
-
-    <?php if (count($support_users) === 0): ?>
-
-        <p>
-            No support users are available.
-        </p>
-
-    <?php else: ?>
-
-        <form method="POST">
-
-            <div>
-
-                <label for="support_id">
-                    Assign to Support User:
-                </label>
-
-                <select
-                    id="support_id"
-                    name="support_id"
-                    required
-                >
-
-                    <option value="">
-                        -- Select Support User --
-                    </option>
-
-                    <?php foreach ($support_users as $support): ?>
-
-                        <option
-                            value="<?php echo htmlspecialchars($support["id"]); ?>"
-                            <?php
-                            if (
-                                $ticket["assigned_to"] !== null &&
-                                (int) $ticket["assigned_to"] === (int) $support["id"]
-                            ) {
-                                echo "selected";
-                            }
-                            ?>
-                        >
-
-                            <?php echo htmlspecialchars($support["name"]); ?>
-
-                            -
-                            <?php echo htmlspecialchars($support["email"]); ?>
-
-                        </option>
-
-                    <?php endforeach; ?>
-
-                </select>
+                <?php echo htmlspecialchars($error); ?>
 
             </div>
 
-            <br>
+        <?php endif; ?>
 
-            <button type="submit">
-                Assign Ticket
-            </button>
 
-        </form>
+        <?php if ($success): ?>
 
-    <?php endif; ?>
+            <div class="alert alert-success">
 
-    <br>
+                <?php echo htmlspecialchars($success); ?>
 
-    <a href="/admin/dashboard.php">
-        Back to Admin Dashboard
-    </a>
+            </div>
+
+        <?php endif; ?>
+
+
+        <div class="card shadow-sm border-0 mb-4">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex justify-content-between align-items-start mb-3">
+
+                    <div>
+
+                        <small class="text-muted">
+                            Ticket
+                        </small>
+
+                        <h4 class="fw-bold mb-0">
+
+                            #<?php echo htmlspecialchars($ticket["id"]); ?>
+
+                        </h4>
+
+                    </div>
+
+                    <span class="badge <?php echo $statusClass; ?> fs-6">
+
+                        <?php echo htmlspecialchars($ticket["status"]); ?>
+
+                    </span>
+
+                </div>
+
+                <hr>
+
+                <small class="text-muted">
+                    Title
+                </small>
+
+                <p class="fw-semibold mb-0">
+
+                    <?php echo htmlspecialchars($ticket["title"]); ?>
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body p-4">
+
+                <h4 class="fw-bold mb-3">
+                    Support Assignment
+                </h4>
+
+                <?php if (count($support_users) === 0): ?>
+
+                    <div class="alert alert-warning mb-0">
+
+                        No support users are currently available.
+
+                    </div>
+
+                <?php else: ?>
+
+                    <form method="POST">
+
+                        <div class="mb-4">
+
+                            <label
+                                for="support_id"
+                                class="form-label fw-semibold"
+                            >
+                                Assign to Support User
+                            </label>
+
+                            <select
+                                id="support_id"
+                                name="support_id"
+                                class="form-select"
+                                required
+                            >
+
+                                <option value="">
+                                    Select Support User
+                                </option>
+
+                                <?php foreach ($support_users as $support): ?>
+
+                                    <option
+                                        value="<?php echo htmlspecialchars($support["id"]); ?>"
+                                        <?php
+                                        if (
+                                            $ticket["assigned_to"] !== null &&
+                                            (int) $ticket["assigned_to"] === (int) $support["id"]
+                                        ) {
+                                            echo "selected";
+                                        }
+                                        ?>
+                                    >
+
+                                        <?php echo htmlspecialchars($support["name"]); ?>
+
+                                        -
+                                        <?php echo htmlspecialchars($support["email"]); ?>
+
+                                    </option>
+
+                                <?php endforeach; ?>
+
+                            </select>
+
+                            <div class="form-text">
+                                Select the support team member who will handle this ticket.
+                            </div>
+
+                        </div>
+
+
+                        <div class="d-flex gap-2">
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                            >
+                                Assign Ticket
+                            </button>
+
+                            <a
+                                href="/admin/dashboard.php"
+                                class="btn btn-outline-secondary"
+                            >
+                                Cancel
+                            </a>
+
+                        </div>
+
+                    </form>
+
+                <?php endif; ?>
+
+            </div>
+
+        </div>
+
+
+        <div class="mt-4">
+
+            <a
+                href="/admin/dashboard.php"
+                class="btn btn-outline-secondary"
+            >
+                ← Back to Admin Dashboard
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
 <?php require_once "../includes/footer.php"; ?>

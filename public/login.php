@@ -36,7 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $_SESSION["user_email"] = $user["email"];
             $_SESSION["user_role"] = $user["role"];
 
-           if ($user["role"] === "admin") {
+            if ($user["role"] === "admin") {
 
                 header("Location: /admin/dashboard.php");
                 exit;
@@ -75,59 +75,148 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <title>Login - IT Help Desk</title>
 
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
 </head>
 
-<body>
+<body class="bg-light">
 
-    <h1>IT Help Desk</h1>
+    <div class="container">
 
-    <h2>Login</h2>
+        <div
+            class="row justify-content-center align-items-center"
+            style="min-height: 100vh;"
+        >
 
-    <?php if ($error): ?>
+            <div class="col-md-7 col-lg-5">
 
-        <p>
-            <?php echo htmlspecialchars($error); ?>
-        </p>
+                <div class="text-center mb-4">
 
-    <?php endif; ?>
+                    <h1 class="fw-bold">
+                        IT Help Desk
+                    </h1>
 
-    <form method="POST">
+                    <p class="text-muted mb-0">
+                        Sign in to manage your support tickets.
+                    </p>
 
-        <div>
+                </div>
 
-            <label for="email">Email:</label>
 
-            <input
-                type="email"
-                id="email"
-                name="email"
-                required
-            >
+                <div class="card shadow border-0">
+
+                    <div class="card-body p-4 p-md-5">
+
+                        <h3 class="fw-bold text-center mb-4">
+                            Login
+                        </h3>
+
+
+                        <?php if ($error): ?>
+
+                            <div
+                                class="alert alert-danger"
+                                role="alert"
+                            >
+                                <?php echo htmlspecialchars($error); ?>
+                            </div>
+
+                        <?php endif; ?>
+
+
+                        <form method="POST">
+
+                            <div class="mb-3">
+
+                                <label
+                                    for="email"
+                                    class="form-label fw-semibold"
+                                >
+                                    Email Address
+                                </label>
+
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    class="form-control"
+                                    placeholder="Enter your email"
+                                    value="<?php echo htmlspecialchars($email ?? ""); ?>"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="mb-4">
+
+                                <label
+                                    for="password"
+                                    class="form-label fw-semibold"
+                                >
+                                    Password
+                                </label>
+
+                                <input
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    class="form-control"
+                                    placeholder="Enter your password"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary w-100"
+                            >
+                                Login
+                            </button>
+
+                        </form>
+
+
+                        <hr class="my-4">
+
+
+                        <p class="text-center text-muted mb-0">
+
+                            Don't have an account?
+
+                            <a
+                                href="/register.php"
+                                class="text-decoration-none fw-semibold"
+                            >
+                                Register
+                            </a>
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <p class="text-center text-muted small mt-4">
+                    IT Help Desk System
+                </p>
+
+            </div>
 
         </div>
 
-        <br>
+    </div>
 
-        <div>
 
-            <label for="password">Password:</label>
-
-            <input
-                type="password"
-                id="password"
-                name="password"
-                required
-            >
-
-        </div>
-
-        <br>
-
-        <button type="submit">
-            Login
-        </button>
-
-    </form>
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    ></script>
 
 </body>
 

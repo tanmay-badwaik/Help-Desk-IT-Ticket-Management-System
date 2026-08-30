@@ -4,12 +4,10 @@ require_once "../config/database.php";
 require_once "../includes/auth.php";
 
 requireRole("admin");
-require_once "../includes/header.php";
 
 $ticket_id = $_GET["id"] ?? "";
 
 if (!ctype_digit($ticket_id)) {
-
     die("Invalid ticket ID.");
 }
 
@@ -36,7 +34,6 @@ $stmt->execute([$ticket_id]);
 $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$ticket) {
-
     http_response_code(404);
     die("Ticket not found.");
 }
@@ -77,95 +74,217 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 
+$statusClass = match ($ticket["status"]) {
+    "Open" => "bg-primary",
+    "Assigned" => "bg-info text-dark",
+    "In Progress" => "bg-warning text-dark",
+    "Resolved" => "bg-success",
+    "Closed" => "bg-secondary",
+    default => "bg-secondary"
+};
+
+require_once "../includes/header.php";
+
 ?>
 
+<div class="row justify-content-center">
+
+    <div class="col-lg-7">
+
+        <div class="mb-4">
+
+            <h2 class="fw-bold mb-1">
+                Close Ticket
+            </h2>
+
+            <p class="text-muted mb-0">
+                Review the resolved ticket before closing it.
+            </p>
+
+        </div>
 
 
-    <h2>
-        Close Ticket #<?php echo htmlspecialchars($ticket["id"]); ?>
-    </h2>
+        <?php if ($error): ?>
 
-    <?php if ($error): ?>
+            <div class="alert alert-danger">
 
-        <p>
-            <?php echo htmlspecialchars($error); ?>
-        </p>
+                <?php echo htmlspecialchars($error); ?>
 
-    <?php endif; ?>
-
-    <?php if ($success): ?>
-
-        <p>
-            <?php echo htmlspecialchars($success); ?>
-        </p>
-
-    <?php endif; ?>
-
-    <p>
-        <strong>Employee:</strong>
-        <?php echo htmlspecialchars($ticket["creator_name"]); ?>
-    </p>
-
-    <p>
-        <strong>Title:</strong>
-        <?php echo htmlspecialchars($ticket["title"]); ?>
-    </p>
-
-    <p>
-        <strong>Assigned To:</strong>
-
-        <?php if ($ticket["assigned_name"]): ?>
-
-            <?php echo htmlspecialchars($ticket["assigned_name"]); ?>
-
-        <?php else: ?>
-
-            Not Assigned
+            </div>
 
         <?php endif; ?>
 
-    </p>
 
-    <p>
-        <strong>Current Status:</strong>
-        <?php echo htmlspecialchars($ticket["status"]); ?>
-    </p>
+        <?php if ($success): ?>
 
-    <?php if ($ticket["status"] === "Resolved"): ?>
+            <div class="alert alert-success">
 
-        <form method="POST">
+                <?php echo htmlspecialchars($success); ?>
 
-            <p>
-                This ticket has been resolved by the support team.
-            </p>
+            </div>
 
-            <button type="submit">
-                Close Ticket
-            </button>
+        <?php endif; ?>
 
-        </form>
 
-    <?php elseif ($ticket["status"] === "Closed"): ?>
+        <div class="card shadow-sm border-0">
 
-        <p>
-            This ticket is already closed.
-        </p>
+            <div class="card-body p-4">
 
-    <?php else: ?>
+                <div class="d-flex justify-content-between align-items-start mb-4">
 
-        <p>
-            This ticket cannot be closed yet.
-            Its current status is:
-            <strong>
-                <?php echo htmlspecialchars($ticket["status"]); ?>
-            </strong>
-        </p>
+                    <div>
 
-    <?php endif; ?>
+                        <small class="text-muted">
+                            Ticket
+                        </small>
 
-    <br>
+                        <h3 class="fw-bold mb-0">
 
-    <a href="/admin/dashboard.php">
-        Back to Admin Dashboard
-    </a>
+                            #<?php echo htmlspecialchars($ticket["id"]); ?>
+
+                        </h3>
+
+                    </div>
+
+                    <span class="badge <?php echo $statusClass; ?> fs-6">
+
+                        <?php echo htmlspecialchars($ticket["status"]); ?>
+
+                    </span>
+
+                </div>
+
+
+                <div class="row g-3 mb-4">
+
+                    <div class="col-md-6">
+
+                        <small class="text-muted">
+                            Employee
+                        </small>
+
+                        <div class="fw-semibold">
+
+                            <?php echo htmlspecialchars($ticket["creator_name"]); ?>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <small class="text-muted">
+                            Assigned To
+                        </small>
+
+                        <div class="fw-semibold">
+
+                            <?php if ($ticket["assigned_name"]): ?>
+
+                                <?php echo htmlspecialchars($ticket["assigned_name"]); ?>
+
+                            <?php else: ?>
+
+                                <span class="text-muted">
+                                    Not Assigned
+                                </span>
+
+                            <?php endif; ?>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <hr>
+
+
+                <small class="text-muted">
+                    Title
+                </small>
+
+                <h5 class="fw-bold mb-4">
+
+                    <?php echo htmlspecialchars($ticket["title"]); ?>
+
+                </h5>
+
+
+                <?php if ($ticket["status"] === "Resolved"): ?>
+
+                    <div class="alert alert-success">
+
+                        This ticket has been resolved by the support team and is ready to be closed.
+
+                    </div>
+
+                    <form method="POST">
+
+                        <button
+                            type="submit"
+                            class="btn btn-danger"
+                        >
+                            Close Ticket
+                        </button>
+
+                    </form>
+
+
+                <?php elseif ($ticket["status"] === "Closed"): ?>
+
+                    <div class="alert alert-secondary mb-0">
+
+                        <strong>Ticket Closed.</strong>
+
+                        This ticket has already been closed.
+
+                    </div>
+
+
+                <?php else: ?>
+
+                    <div class="alert alert-warning mb-0">
+
+                        This ticket cannot be closed yet.
+
+                        Current status:
+
+                        <strong>
+                            <?php echo htmlspecialchars($ticket["status"]); ?>
+                        </strong>
+
+                    </div>
+
+                <?php endif; ?>
+
+            </div>
+
+        </div>
+
+
+        <div class="mt-4 d-flex flex-wrap gap-2">
+
+            <a
+                href="/ticket-conversation.php?id=<?php echo urlencode($ticket["id"]); ?>"
+                class="btn btn-outline-primary"
+            >
+                View Conversation
+            </a>
+
+            <a
+                href="/admin/dashboard.php"
+                class="btn btn-outline-secondary"
+            >
+                ← Back to Admin Dashboard
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
 <?php require_once "../includes/footer.php"; ?>

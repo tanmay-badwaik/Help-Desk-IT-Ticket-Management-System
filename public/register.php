@@ -62,7 +62,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $hashed_password
             ]);
 
-            $message = "Registration successful!";
+            $message = "Registration successful! You can now log in.";
+
+            // Clear form after successful registration
+            $name = "";
+            $email = "";
         }
     }
 }
@@ -83,101 +87,216 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <title>Register - IT Help Desk</title>
 
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
 </head>
 
-<body>
+<body class="bg-light">
 
-    <h1>IT Help Desk</h1>
+    <div class="container">
 
-    <h2>Create Account</h2>
+        <div
+            class="row justify-content-center align-items-center py-5"
+            style="min-height: 100vh;"
+        >
 
-    <?php if ($message): ?>
+            <div class="col-md-8 col-lg-5">
 
-        <p>
-            <?php echo htmlspecialchars($message); ?>
-        </p>
+                <div class="text-center mb-4">
 
-    <?php endif; ?>
+                    <h1 class="fw-bold">
+                        IT Help Desk
+                    </h1>
 
+                    <p class="text-muted mb-0">
+                        Create your account to submit and track support tickets.
+                    </p>
 
-    <?php if ($error): ?>
-
-        <p>
-            <?php echo htmlspecialchars($error); ?>
-        </p>
-
-    <?php endif; ?>
+                </div>
 
 
-    <form method="POST">
+                <div class="card shadow border-0">
 
-        <div>
+                    <div class="card-body p-4 p-md-5">
 
-            <label for="name">Name:</label>
+                        <h3 class="fw-bold text-center mb-4">
+                            Create Account
+                        </h3>
 
-            <input
-                type="text"
-                id="name"
-                name="name"
-                required
-            >
+
+                        <?php if ($message): ?>
+
+                            <div
+                                class="alert alert-success"
+                                role="alert"
+                            >
+                                <?php echo htmlspecialchars($message); ?>
+
+                                <a
+                                    href="/login.php"
+                                    class="alert-link"
+                                >
+                                    Login
+                                </a>
+                            </div>
+
+                        <?php endif; ?>
+
+
+                        <?php if ($error): ?>
+
+                            <div
+                                class="alert alert-danger"
+                                role="alert"
+                            >
+                                <?php echo htmlspecialchars($error); ?>
+                            </div>
+
+                        <?php endif; ?>
+
+
+                        <form method="POST">
+
+                            <div class="mb-3">
+
+                                <label
+                                    for="name"
+                                    class="form-label fw-semibold"
+                                >
+                                    Full Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="name"
+                                    name="name"
+                                    class="form-control"
+                                    placeholder="Enter your full name"
+                                    value="<?php echo htmlspecialchars($name ?? ""); ?>"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="mb-3">
+
+                                <label
+                                    for="email"
+                                    class="form-label fw-semibold"
+                                >
+                                    Email Address
+                                </label>
+
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    class="form-control"
+                                    placeholder="Enter your email"
+                                    value="<?php echo htmlspecialchars($email ?? ""); ?>"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="mb-3">
+
+                                <label
+                                    for="password"
+                                    class="form-label fw-semibold"
+                                >
+                                    Password
+                                </label>
+
+                                <input
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    class="form-control"
+                                    placeholder="Create a password"
+                                    minlength="6"
+                                    required
+                                >
+
+                                <div class="form-text">
+                                    Password must be at least 6 characters long.
+                                </div>
+
+                            </div>
+
+
+                            <div class="mb-4">
+
+                                <label
+                                    for="confirm_password"
+                                    class="form-label fw-semibold"
+                                >
+                                    Confirm Password
+                                </label>
+
+                                <input
+                                    type="password"
+                                    id="confirm_password"
+                                    name="confirm_password"
+                                    class="form-control"
+                                    placeholder="Enter your password again"
+                                    minlength="6"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary w-100"
+                            >
+                                Create Account
+                            </button>
+
+                        </form>
+
+
+                        <hr class="my-4">
+
+
+                        <p class="text-center text-muted mb-0">
+
+                            Already have an account?
+
+                            <a
+                                href="/login.php"
+                                class="text-decoration-none fw-semibold"
+                            >
+                                Login
+                            </a>
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <p class="text-center text-muted small mt-4">
+                    IT Help Desk System
+                </p>
+
+            </div>
 
         </div>
 
-        <br>
+    </div>
 
-        <div>
 
-            <label for="email">Email:</label>
-
-            <input
-                type="email"
-                id="email"
-                name="email"
-                required
-            >
-
-        </div>
-
-        <br>
-
-        <div>
-
-            <label for="password">Password:</label>
-
-            <input
-                type="password"
-                id="password"
-                name="password"
-                required
-            >
-
-        </div>
-
-        <br>
-
-        <div>
-
-            <label for="confirm_password">
-                Confirm Password:
-            </label>
-
-            <input
-                type="password"
-                id="confirm_password"
-                name="confirm_password"
-                required
-            >
-
-        </div>
-
-        <br>
-
-        <button type="submit">
-            Register
-        </button>
-
-    </form>
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    ></script>
 
 </body>
 

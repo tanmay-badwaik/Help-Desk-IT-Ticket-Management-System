@@ -1,9 +1,12 @@
 <?php
+
 require_once "../config/database.php";
 require_once "../includes/auth.php";
 
 requireRole("support");
+
 require_once "../includes/header.php";
+
 /*
  * Get tickets assigned to the logged-in support user
  */
@@ -33,87 +36,182 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
 
+<div class="mb-4">
 
-    <h3>My Assigned Tickets</h3>
+    <h2 class="fw-bold mb-1">
+        My Assigned Tickets
+    </h2>
 
-    <?php if (count($tickets) === 0): ?>
+    <p class="text-muted mb-0">
+        View and manage tickets assigned to you.
+    </p>
 
-        <p>
-            No tickets are currently assigned to you.
-        </p>
+</div>
 
-    <?php else: ?>
 
-        <table border="1" cellpadding="8" cellspacing="0">
-            <thead>
+<?php if (count($tickets) === 0): ?>
 
-                <tr>
+    <div class="alert alert-info">
 
-                    <th>ID</th>
-                    <th>Employee</th>
-                    <th>Title</th>
-                    <th>Category</th>
-                    <th>Priority</th>
-                    <th>Status</th>
-                    <th>Created At</th>
-                    <th>Action</th>
+        No tickets are currently assigned to you.
 
-                </tr>
+    </div>
 
-            </thead>
+<?php else: ?>
 
-            <tbody>
+    <div class="card shadow-sm border-0">
 
-                <?php foreach ($tickets as $ticket): ?>
+        <div class="card-body p-0">
 
-                    <tr>
+            <div class="table-responsive">
 
-                        <td>
-                            <?php echo htmlspecialchars($ticket["id"]); ?>
-                        </td>
+                <table class="table table-hover align-middle mb-0">
 
-                        <td>
-                            <?php echo htmlspecialchars($ticket["creator_name"]); ?>
-                        </td>
+                    <thead class="table-dark">
 
-                        <td>
-                            <?php echo htmlspecialchars($ticket["title"]); ?>
-                        </td>
+                        <tr>
 
-                        <td>
-                            <?php echo htmlspecialchars($ticket["category_name"]); ?>
-                        </td>
+                            <th>ID</th>
 
-                        <td>
-                            <?php echo htmlspecialchars($ticket["priority"]); ?>
-                        </td>
+                            <th>Employee</th>
 
-                        <td>
-                            <?php echo htmlspecialchars($ticket["status"]); ?>
-                        </td>
+                            <th>Title</th>
 
-                        <td>
-                            <?php echo htmlspecialchars($ticket["created_at"]); ?>
-                        </td>
-                        <td>
-                            <a href="/support/update-ticket.php?id=<?php echo urlencode($ticket["id"]); ?>">
-                                View / Update
-                            </a>
+                            <th>Category</th>
 
-                            <br>
+                            <th>Priority</th>
 
-                            <a href="/ticket-conversation.php?id=<?php echo urlencode($ticket["id"]); ?>">
-                                Conversation
-                            </a>
-                        </td>
+                            <th>Status</th>
 
-                    </tr>
+                            <th>Created At</th>
 
-                <?php endforeach; ?>
+                            <th>Action</th>
 
-            </tbody>
+                        </tr>
 
-        </table>
+                    </thead>
 
-    <?php endif; ?>
+                    <tbody>
+
+                        <?php foreach ($tickets as $ticket): ?>
+
+                            <?php
+
+                            $priorityClass = match ($ticket["priority"]) {
+                                "Low" => "bg-secondary",
+                                "Medium" => "bg-info text-dark",
+                                "High" => "bg-warning text-dark",
+                                "Critical" => "bg-danger",
+                                default => "bg-secondary"
+                            };
+
+                            $statusClass = match ($ticket["status"]) {
+                                "Open" => "bg-primary",
+                                "Assigned" => "bg-info text-dark",
+                                "In Progress" => "bg-warning text-dark",
+                                "Resolved" => "bg-success",
+                                "Closed" => "bg-secondary",
+                                default => "bg-secondary"
+                            };
+
+                            ?>
+
+                            <tr>
+
+                                <td>
+
+                                    #<?php echo htmlspecialchars($ticket["id"]); ?>
+
+                                </td>
+
+                                <td class="fw-semibold">
+
+                                    <?php echo htmlspecialchars($ticket["creator_name"]); ?>
+
+                                </td>
+
+                                <td>
+
+                                    <?php echo htmlspecialchars($ticket["title"]); ?>
+
+                                </td>
+
+                                <td>
+
+                                    <?php echo htmlspecialchars($ticket["category_name"]); ?>
+
+                                </td>
+
+                                <td>
+
+                                    <span class="badge <?php echo $priorityClass; ?>">
+
+                                        <?php echo htmlspecialchars($ticket["priority"]); ?>
+
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <span class="badge <?php echo $statusClass; ?>">
+
+                                        <?php echo htmlspecialchars($ticket["status"]); ?>
+
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <?php
+                                    echo htmlspecialchars(
+                                        date(
+                                            "d M Y, h:i A",
+                                            strtotime($ticket["created_at"])
+                                        )
+                                    );
+                                    ?>
+
+                                </td>
+
+                                <td>
+
+                                    <div class="d-flex flex-wrap gap-2">
+
+                                        <a
+                                            href="/support/update-ticket.php?id=<?php echo urlencode($ticket["id"]); ?>"
+                                            class="btn btn-sm btn-outline-primary"
+                                        >
+                                            View / Update
+                                        </a>
+
+                                        <a
+                                            href="/ticket-conversation.php?id=<?php echo urlencode($ticket["id"]); ?>"
+                                            class="btn btn-sm btn-outline-secondary"
+                                        >
+                                            Conversation
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        <?php endforeach; ?>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+<?php endif; ?>
+
+
 <?php require_once "../includes/footer.php"; ?>

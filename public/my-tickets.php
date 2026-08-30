@@ -4,10 +4,13 @@ require_once "../config/database.php";
 require_once "../includes/auth.php";
 
 requireLogin();
+
 require_once "../includes/header.php";
+
 /*
  * Get tickets created by the logged-in employee
  */
+
 $stmt = $pdo->prepare(
     "SELECT
         tickets.id,
@@ -34,105 +37,217 @@ $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
 
-<h2>My Tickets</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
 
-<p>
-    You can view your tickets and their conversations below.
-</p>
+    <div>
 
-<p>
-    <a href="/create-ticket.php">
-        Create New Ticket
+        <h2 class="fw-bold mb-1">
+            My Tickets
+        </h2>
+
+        <p class="text-muted mb-0">
+            View your submitted tickets and track their current status.
+        </p>
+
+    </div>
+
+    <a
+        href="/create-ticket.php"
+        class="btn btn-primary"
+    >
+        + Create Ticket
     </a>
-</p>
+
+</div>
+
 
 <?php if (count($tickets) === 0): ?>
 
-    <p>
+    <div class="alert alert-info">
+
         You have not created any tickets yet.
-    </p>
+
+        <a
+            href="/create-ticket.php"
+            class="alert-link"
+        >
+            Create your first ticket
+        </a>.
+
+    </div>
 
 <?php else: ?>
 
-    <table border="1" cellpadding="8" cellspacing="0">
+    <div class="card shadow-sm border-0">
 
-        <thead>
+        <div class="card-body p-0">
 
-            <tr>
+            <div class="table-responsive">
 
-                <th>ID</th>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Priority</th>
-                <th>Assigned To</th>
-                <th>Status</th>
-                <th>Created At</th>
-                <th>Action</th>
+                <table class="table table-hover align-middle mb-0">
 
-            </tr>
+                    <thead class="table-dark">
 
-        </thead>
+                        <tr>
 
-        <tbody>
+                            <th>ID</th>
 
-            <?php foreach ($tickets as $ticket): ?>
+                            <th>Title</th>
 
-                <tr>
+                            <th>Category</th>
 
-                    <td>
-                        <?php echo htmlspecialchars($ticket["id"]); ?>
-                    </td>
+                            <th>Priority</th>
 
-                    <td>
-                        <?php echo htmlspecialchars($ticket["title"]); ?>
-                    </td>
+                            <th>Assigned To</th>
 
-                    <td>
-                        <?php echo htmlspecialchars($ticket["category_name"]); ?>
-                    </td>
+                            <th>Status</th>
 
-                    <td>
-                        <?php echo htmlspecialchars($ticket["priority"]); ?>
-                    </td>
+                            <th>Created At</th>
 
-                    <td>
+                            <th>Action</th>
 
-                        <?php if ($ticket["assigned_name"]): ?>
+                        </tr>
 
-                            <?php echo htmlspecialchars($ticket["assigned_name"]); ?>
+                    </thead>
 
-                        <?php else: ?>
+                    <tbody>
 
-                            Not Assigned
+                        <?php foreach ($tickets as $ticket): ?>
 
-                        <?php endif; ?>
+                            <tr>
 
-                    </td>
+                                <td>
 
-                    <td>
-                        <?php echo htmlspecialchars($ticket["status"]); ?>
-                    </td>
+                                    #<?php echo htmlspecialchars($ticket["id"]); ?>
 
-                    <td>
-                        <?php echo htmlspecialchars($ticket["created_at"]); ?>
-                    </td>
+                                </td>
 
-                    <td>
 
-                        <a href="/ticket-conversation.php?id=<?php echo urlencode($ticket["id"]); ?>">
-                            View
-                        </a>
+                                <td class="fw-semibold">
 
-                    </td>
+                                    <?php echo htmlspecialchars($ticket["title"]); ?>
 
-                </tr>
+                                </td>
 
-            <?php endforeach; ?>
 
-        </tbody>
+                                <td>
 
-    </table>
+                                    <?php echo htmlspecialchars($ticket["category_name"]); ?>
+
+                                </td>
+
+
+                                <td>
+
+                                    <?php
+
+                                    $priorityClass = match ($ticket["priority"]) {
+                                        "Low" => "bg-secondary",
+                                        "Medium" => "bg-info text-dark",
+                                        "High" => "bg-warning text-dark",
+                                        "Critical" => "bg-danger",
+                                        default => "bg-secondary"
+                                    };
+
+                                    ?>
+
+                                    <span class="badge <?php echo $priorityClass; ?>">
+
+                                        <?php echo htmlspecialchars($ticket["priority"]); ?>
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <?php if ($ticket["assigned_name"]): ?>
+
+                                        <?php echo htmlspecialchars($ticket["assigned_name"]); ?>
+
+                                    <?php else: ?>
+
+                                        <span class="text-muted">
+                                            Not Assigned
+                                        </span>
+
+                                    <?php endif; ?>
+
+                                </td>
+
+
+                                <td>
+
+                                    <?php
+
+                                    $statusClass = match ($ticket["status"]) {
+
+                                        "Open" => "bg-primary",
+
+                                        "Assigned" => "bg-info text-dark",
+
+                                        "In Progress" => "bg-warning text-dark",
+
+                                        "Resolved" => "bg-success",
+
+                                        "Closed" => "bg-secondary",
+
+                                        default => "bg-secondary"
+
+                                    };
+
+                                    ?>
+
+                                    <span class="badge <?php echo $statusClass; ?>">
+
+                                        <?php echo htmlspecialchars($ticket["status"]); ?>
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <?php
+                                    echo htmlspecialchars(
+                                        date(
+                                            "d M Y, h:i A",
+                                            strtotime($ticket["created_at"])
+                                        )
+                                    );
+                                    ?>
+
+                                </td>
+
+
+                                <td>
+
+                                    <a
+                                        href="/ticket-conversation.php?id=<?php echo urlencode($ticket["id"]); ?>"
+                                        class="btn btn-sm btn-outline-primary"
+                                    >
+                                        View
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
+                        <?php endforeach; ?>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
 
 <?php endif; ?>
+
 
 <?php require_once "../includes/footer.php"; ?>

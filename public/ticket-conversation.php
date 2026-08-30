@@ -4,13 +4,10 @@ require_once "../config/database.php";
 require_once "../includes/auth.php";
 
 requireLogin();
-require_once "../includes/header.php";
-
 
 $ticket_id = $_GET["id"] ?? "";
 
 if (!ctype_digit($ticket_id)) {
-
     die("Invalid ticket ID.");
 }
 
@@ -123,13 +120,10 @@ $error = "";
 $success = "";
 
 /*
- * Add a new comment
+ * Add new comment
  */
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-    /*
-     * Do not allow comments on closed tickets.
-     */
     if ($ticket["status"] === "Closed") {
 
         $error = "Comments cannot be added to a closed ticket.";
@@ -184,201 +178,360 @@ $stmt->execute([
 
 $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+/*
+ * Bootstrap classes for priority
+ */
+$priorityClass = match ($ticket["priority"]) {
+    "Low" => "bg-secondary",
+    "Medium" => "bg-info text-dark",
+    "High" => "bg-warning text-dark",
+    "Critical" => "bg-danger",
+    default => "bg-secondary"
+};
+
+/*
+ * Bootstrap classes for status
+ */
+$statusClass = match ($ticket["status"]) {
+    "Open" => "bg-primary",
+    "Assigned" => "bg-info text-dark",
+    "In Progress" => "bg-warning text-dark",
+    "Resolved" => "bg-success",
+    "Closed" => "bg-secondary",
+    default => "bg-secondary"
+};
+
+require_once "../includes/header.php";
+
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
+<div class="d-flex justify-content-between align-items-center mb-4">
 
-<head>
+    <div>
 
-    <meta charset="UTF-8">
+        <h2 class="fw-bold mb-1">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+            Ticket #<?php echo htmlspecialchars($ticket["id"]); ?>
 
-    <title>
-        Ticket #<?php echo htmlspecialchars($ticket["id"]); ?>
-        - IT Help Desk
-    </title>
+        </h2>
 
-</head>
+        <p class="text-muted mb-0">
 
-<body>
+            <?php echo htmlspecialchars($ticket["title"]); ?>
 
-    <h1>IT Help Desk</h1>
+        </p>
 
-    <h2>
-        Ticket #<?php echo htmlspecialchars($ticket["id"]); ?>
-    </h2>
+    </div>
 
-    <p>
-        <strong>Title:</strong>
-        <?php echo htmlspecialchars($ticket["title"]); ?>
-    </p>
+    <div class="d-flex gap-2">
 
-    <p>
-        <strong>Category:</strong>
-        <?php echo htmlspecialchars($ticket["category_name"]); ?>
-    </p>
+        <span class="badge <?php echo $priorityClass; ?> fs-6">
 
-    <p>
-        <strong>Priority:</strong>
-        <?php echo htmlspecialchars($ticket["priority"]); ?>
-    </p>
+            <?php echo htmlspecialchars($ticket["priority"]); ?>
 
-    <p>
-        <strong>Status:</strong>
-        <?php echo htmlspecialchars($ticket["status"]); ?>
-    </p>
+        </span>
 
-    <p>
-        <strong>Assigned To:</strong>
+        <span class="badge <?php echo $statusClass; ?> fs-6">
 
-        <?php if ($ticket["assigned_name"]): ?>
+            <?php echo htmlspecialchars($ticket["status"]); ?>
 
-            <?php echo htmlspecialchars($ticket["assigned_name"]); ?>
+        </span>
+
+    </div>
+
+</div>
+
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-body p-4">
+
+        <h5 class="fw-bold mb-3">
+            Ticket Details
+        </h5>
+
+        <div class="row g-3">
+
+            <div class="col-md-4">
+
+                <small class="text-muted">
+                    Category
+                </small>
+
+                <div class="fw-semibold">
+
+                    <?php echo htmlspecialchars($ticket["category_name"]); ?>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <small class="text-muted">
+                    Assigned To
+                </small>
+
+                <div class="fw-semibold">
+
+                    <?php if ($ticket["assigned_name"]): ?>
+
+                        <?php echo htmlspecialchars($ticket["assigned_name"]); ?>
+
+                    <?php else: ?>
+
+                        <span class="text-muted">
+                            Not Assigned
+                        </span>
+
+                    <?php endif; ?>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <small class="text-muted">
+                    Created At
+                </small>
+
+                <div class="fw-semibold">
+
+                    <?php
+                    echo htmlspecialchars(
+                        date(
+                            "d M Y, h:i A",
+                            strtotime($ticket["created_at"])
+                        )
+                    );
+                    ?>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <hr>
+
+        <h6 class="fw-bold">
+            Description
+        </h6>
+
+        <p class="mb-0">
+
+            <?php echo nl2br(
+                htmlspecialchars($ticket["description"])
+            ); ?>
+
+        </p>
+
+    </div>
+
+</div>
+
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-body p-4">
+
+        <h4 class="fw-bold mb-4">
+            Conversation
+        </h4>
+
+
+        <?php if (count($comments) === 0): ?>
+
+            <div class="text-center py-4 text-muted">
+
+                No comments yet.
+
+            </div>
 
         <?php else: ?>
 
-            Not Assigned
+            <?php foreach ($comments as $comment): ?>
+
+                <?php
+
+                $isCurrentUser =
+                    $comment["name"] === $_SESSION["user_name"];
+
+                ?>
+
+                <div class="d-flex mb-4 <?php echo $isCurrentUser ? "justify-content-end" : "justify-content-start"; ?>">
+
+                    <div
+                        class="p-3 rounded shadow-sm <?php echo $isCurrentUser ? "bg-primary text-white" : "bg-light"; ?>"
+                        style="max-width: 75%;"
+                    >
+
+                        <div class="d-flex justify-content-between gap-4 mb-2">
+
+                            <strong>
+
+                                <?php echo htmlspecialchars($comment["name"]); ?>
+
+                            </strong>
+
+                            <small class="<?php echo $isCurrentUser ? "text-white-50" : "text-muted"; ?>">
+
+                                <?php
+                                echo htmlspecialchars(
+                                    date(
+                                        "d M Y, h:i A",
+                                        strtotime($comment["created_at"])
+                                    )
+                                );
+                                ?>
+
+                            </small>
+
+                        </div>
+
+                        <div class="mb-2">
+
+                            <span
+                                class="badge <?php echo $isCurrentUser ? "bg-light text-dark" : "bg-secondary"; ?>"
+                            >
+
+                                <?php echo htmlspecialchars(
+                                    ucfirst($comment["role"])
+                                ); ?>
+
+                            </span>
+
+                        </div>
+
+                        <div>
+
+                            <?php echo nl2br(
+                                htmlspecialchars($comment["comment"])
+                            ); ?>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            <?php endforeach; ?>
 
         <?php endif; ?>
 
-    </p>
+    </div>
 
-    <h3>Description</h3>
+</div>
 
-    <p>
-        <?php echo nl2br(
-            htmlspecialchars($ticket["description"])
-        ); ?>
-    </p>
 
-    <hr>
+<?php if ($success): ?>
 
-    <h3>Conversation</h3>
+    <div class="alert alert-success">
 
-    <?php if (count($comments) === 0): ?>
+        <?php echo htmlspecialchars($success); ?>
 
-        <p>
-            No comments yet.
-        </p>
+    </div>
 
-    <?php else: ?>
+<?php endif; ?>
 
-        <?php foreach ($comments as $comment): ?>
 
-            <div>
+<?php if ($error): ?>
 
-                <p>
+    <div class="alert alert-danger">
 
-                    <strong>
-                        <?php echo htmlspecialchars($comment["name"]); ?>
-                    </strong>
+        <?php echo htmlspecialchars($error); ?>
 
-                    (<?php echo htmlspecialchars($comment["role"]); ?>)
+    </div>
 
-                    -
+<?php endif; ?>
 
-                    <?php echo htmlspecialchars($comment["created_at"]); ?>
 
-                </p>
+<?php if ($ticket["status"] !== "Closed"): ?>
 
-                <p>
-                    <?php echo nl2br(
-                        htmlspecialchars($comment["comment"])
-                    ); ?>
-                </p>
+    <div class="card shadow-sm border-0 mb-4">
 
-            </div>
+        <div class="card-body p-4">
 
-            <hr>
-
-        <?php endforeach; ?>
-
-    <?php endif; ?>
-
-    <?php if ($success): ?>
-
-        <p>
-            <?php echo htmlspecialchars($success); ?>
-        </p>
-
-    <?php endif; ?>
-
-    <?php if ($error): ?>
-
-        <p>
-            <?php echo htmlspecialchars($error); ?>
-        </p>
-
-    <?php endif; ?>
-
-    <?php if ($ticket["status"] !== "Closed"): ?>
-
-        <h3>Add Comment</h3>
-
-        <form method="POST">
-
-            <div>
-
-                <label for="comment">
-                    Comment:
-                </label>
-
-                <br>
-
-                <textarea
-                    id="comment"
-                    name="comment"
-                    rows="5"
-                    cols="60"
-                    required
-                ></textarea>
-
-            </div>
-
-            <br>
-
-            <button type="submit">
+            <h5 class="fw-bold mb-3">
                 Add Comment
-            </button>
+            </h5>
 
-        </form>
+            <form method="POST">
 
-    <?php else: ?>
+                <div class="mb-3">
 
-        <p>
-            This ticket is closed. No further comments can be added.
-        </p>
+                    <textarea
+                        id="comment"
+                        name="comment"
+                        class="form-control"
+                        rows="4"
+                        placeholder="Write your message..."
+                        required
+                    ></textarea>
 
-    <?php endif; ?>
+                </div>
 
-    <br>
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Add Comment
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+<?php else: ?>
+
+    <div class="alert alert-secondary">
+
+        <strong>Ticket Closed.</strong>
+
+        This ticket is closed. No further comments can be added.
+
+    </div>
+
+<?php endif; ?>
+
+
+<div class="mt-3">
 
     <?php if ($_SESSION["user_role"] === "employee"): ?>
 
-        <a href="/my-tickets.php">
-            Back to My Tickets
+        <a
+            href="/my-tickets.php"
+            class="btn btn-outline-secondary"
+        >
+            ← Back to My Tickets
         </a>
 
     <?php elseif ($_SESSION["user_role"] === "support"): ?>
 
-        <a href="/support/assigned-tickets.php">
-            Back to Assigned Tickets
+        <a
+            href="/support/assigned-tickets.php"
+            class="btn btn-outline-secondary"
+        >
+            ← Back to Assigned Tickets
         </a>
 
     <?php else: ?>
 
-        <a href="/admin/dashboard.php">
-            Back to Admin Dashboard
+        <a
+            href="/admin/dashboard.php"
+            class="btn btn-outline-secondary"
+        >
+            ← Back to Admin Dashboard
         </a>
 
     <?php endif; ?>
 
-</body>
+</div>
 
-</html>
+
 <?php require_once "../includes/footer.php"; ?>
